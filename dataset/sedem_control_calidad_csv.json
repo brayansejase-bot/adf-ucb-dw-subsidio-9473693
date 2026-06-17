@@ -1,0 +1,75 @@
+{
+	"name": "sedem_control_calidad_csv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "datalake_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Bronze/SEDEM"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "sedem_control_calidad.csv",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "control_id",
+				"type": "String"
+			},
+			{
+				"name": "produccion_id",
+				"type": "String"
+			},
+			{
+				"name": "nro_lote",
+				"type": "String"
+			},
+			{
+				"name": "nro_control",
+				"type": "String"
+			},
+			{
+				"name": "fecha_control",
+				"type": "String"
+			},
+			{
+				"name": "parametro",
+				"type": "String"
+			},
+			{
+				"name": "valor_medido",
+				"type": "String"
+			},
+			{
+				"name": "unidad_medida",
+				"type": "String"
+			},
+			{
+				"name": "valor_minimo",
+				"type": "String"
+			},
+			{
+				"name": "valor_maximo",
+				"type": "String"
+			},
+			{
+				"name": "cumple",
+				"type": "String"
+			},
+			{
+				"name": "inspector",
+				"type": "String"
+			}
+		]
+	}
+}
