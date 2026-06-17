@@ -1,0 +1,47 @@
+{
+	"name": "sup_catalogo_paquetes_csv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "datalake_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Bronze/SUP"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "sup_catalogo-paquetes.csv",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "paquete_id",
+				"type": "String"
+			},
+			{
+				"name": "nombre",
+				"type": "String"
+			},
+			{
+				"name": "contenido",
+				"type": "String"
+			},
+			{
+				"name": "peso_estandar_kg",
+				"type": "String"
+			},
+			{
+				"name": "costo_estimado_bs",
+				"type": "String"
+			}
+		]
+	}
+}
