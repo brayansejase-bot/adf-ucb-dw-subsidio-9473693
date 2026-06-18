@@ -1,0 +1,137 @@
+{
+	"name": "df_establecimientos_salud",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bja_establecimientos_salud_csv",
+						"type": "DatasetReference"
+					},
+					"name": "bjaestab"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_establecimientos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "supestab"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_establecimientos_salud",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> bjaestab",
+				"source(output(",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> supestab",
+				"bjaestab, supestab join(bjaestab@codigo_snis == supestab@codigo_snis,",
+				"     joinType:'outer',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 derive(codigo_snis = coalesce(bjaestab@codigo_snis,supestab@codigo_snis),",
+				"          nombre = coalesce(bjaestab@nombre, supestab@nombre),",
+				"          tipo = coalesce(bjaestab@tipo, supestab@tipo),",
+				"          nivel_atencion = coalesce(bjaestab@nivel_atencion, supestab@nivel_atencion),",
+				"          municipio = coalesce(bjaestab@municipio, supestab@municipio),",
+				"          departamento = coalesce(bjaestab@departamento, supestab@departamento),",
+				"          red_salud = coalesce(bjaestab@red_salud, supestab@red_salud),",
+				"          estado = coalesce(bjaestab@estado, supestab@estado)) ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          codigo_snis,",
+				"          nombre,",
+				"          tipo,",
+				"          nivel_atencion,",
+				"          municipio,",
+				"          departamento,",
+				"          red_salud,",
+				"          estado",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(departamento = case(\r",
+				"  in(['La Paz'], departamento), 'LP',\r",
+				"  in(['Cochabamba','CB'], departamento), 'CBBA',\r",
+				"  in(['Oruro'], departamento), 'OR',\r",
+				"  in(['Chuquisaca'], departamento), 'CH',\r",
+				"  in(['Santa Cruz','SC'], departamento), 'SCZ',\r",
+				"  in(['Tarija','TJ'], departamento), 'TJA',\r",
+				"  in(['Beni','BN'], departamento), 'BE',\r",
+				"  in(['Pando'], departamento), 'PD',\r",
+				"  in(['Potosí','Potosi'], departamento), 'PT',\r",
+				"  departamento\r",
+				")) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

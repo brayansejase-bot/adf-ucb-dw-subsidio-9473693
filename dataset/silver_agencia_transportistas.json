@@ -1,0 +1,49 @@
+{
+	"name": "silver_agencia_transportistas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Silver"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "transportista_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "razon_social",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nit",
+				"type": "nvarchar"
+			},
+			{
+				"name": "municipio",
+				"type": "nvarchar"
+			},
+			{
+				"name": "contacto",
+				"type": "nvarchar"
+			},
+			{
+				"name": "telefono",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "agencia_transportistas"
+		}
+	}
+}

@@ -1,0 +1,74 @@
+{
+	"name": "df_agencia_almacenes",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "as_almacenes_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_agencia_almacenes",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          almacen_id as string,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          direccion as string,",
+				"          capacidad_m3 as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(almacen_id = toInteger(almacen_id),",
+				"          nombre = trim(toString(nombre)),",
+				"          municipio = trim(toString(municipio)),",
+				"          departamento = trim(toString(departamento)),",
+				"          direccion = trim(toString(direccion)),",
+				"          capacidad_m3 = toDecimal(toString(capacidad_m3), 10, 2),",
+				"          estado = trim(toString(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          almacen_id as integer,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          direccion as string,",
+				"          capacidad_m3 as decimal(10,2),",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

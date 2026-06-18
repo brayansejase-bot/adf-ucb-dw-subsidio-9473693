@@ -1,0 +1,97 @@
+{
+	"name": "df_sedem_inventario",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sedem_inventario_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_inventario",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          inventario_id as string,",
+				"          empresa_id as string,",
+				"          producto_id as string,",
+				"          nro_lote as string,",
+				"          cantidad_producida as string,",
+				"          cantidad_despachada as string,",
+				"          cantidad_disponible as string,",
+				"          estado as string,",
+				"          fecha_ultimo_movimiento as string,",
+				"          almacen as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(inventario_id = toInteger(inventario_id),",
+				"          empresa_id = toInteger(empresa_id),",
+				"          producto_id = toInteger(producto_id),",
+				"          nro_lote = trim(toString(nro_lote)),",
+				"          cantidad_producida = toDecimal(toString(cantidad_producida), 12, 3),",
+				"          cantidad_despachada = toDecimal(toString(cantidad_despachada), 12, 3),",
+				"          cantidad_disponible = toDecimal(toString(cantidad_disponible), 12, 3),",
+				"          estado = initCap(trim(estado)),",
+				"          fecha_ultimo_movimiento = coalesce( \r",
+				"    toDate(trim(fecha_ultimo_movimiento), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_ultimo_movimiento), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_ultimo_movimiento), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_ultimo_movimiento), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_ultimo_movimiento), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_ultimo_movimiento), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_ultimo_movimiento), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_ultimo_movimiento), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_ultimo_movimiento), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          almacen = initCap(trim(almacen))) ~> derivedColumn1",
+				"derivedColumn1 derive(almacen = iif(isNull(almacen), 'Sin especificar', almacen)) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          inventario_id as integer,",
+				"          empresa_id as integer,",
+				"          producto_id as integer,",
+				"          nro_lote as string,",
+				"          cantidad_producida as decimal(12,3),",
+				"          cantidad_despachada as decimal(12,3),",
+				"          cantidad_disponible as decimal(12,3),",
+				"          estado as string,",
+				"          fecha_ultimo_movimiento as date,",
+				"          almacen as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

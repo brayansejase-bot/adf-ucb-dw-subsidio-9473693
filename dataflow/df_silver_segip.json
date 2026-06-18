@@ -1,0 +1,90 @@
+{
+	"name": "df_silver_segip",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "segip_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_segip_personas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          CI as string,",
+				"          Nombres as string,",
+				"          {Ap. Paterno} as string,",
+				"          {Ap. Materno} as string,",
+				"          {Fecha Nac.} as string,",
+				"          {Género} as string,",
+				"          {Estado Civil} as string,",
+				"          Municipio as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive({Fecha Nac.} = coalesce( \r",
+				"    toDate(trim(toString(byName('Fecha Nac.'))), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(toString(byName('Fecha Nac.'))), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(toString(byName('Fecha Nac.'))), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(toString(byName('Fecha Nac.'))), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(toString(byName('Fecha Nac.'))), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(toString(byName('Fecha Nac.'))), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(toString(byName('Fecha Nac.'))), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(toString(byName('Fecha Nac.'))), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(toString(byName('Fecha Nac.'))), \"dd 'de' MMMM 'de' yyyy\")\r",
+				")) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ci as string,",
+				"          nombres as string,",
+				"          ap_paterno as string,",
+				"          ap_materno as string,",
+				"          fecha_nac as date,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          municipio as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ci = CI,",
+				"          nombres = Nombres,",
+				"          ap_paterno = {Ap. Paterno},",
+				"          ap_materno = {Ap. Materno},",
+				"          fecha_nac = {Fecha Nac.},",
+				"          genero = {Género},",
+				"          estado_civil = {Estado Civil},",
+				"          municipio = Municipio",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

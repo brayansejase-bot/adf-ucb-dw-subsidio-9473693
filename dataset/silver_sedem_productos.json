@@ -1,0 +1,46 @@
+{
+	"name": "silver_sedem_productos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Silver"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "producto_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "empresa_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nombre",
+				"type": "nvarchar"
+			},
+			{
+				"name": "categoria",
+				"type": "nvarchar"
+			},
+			{
+				"name": "presentacion",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "sedem_productos"
+		}
+	}
+}

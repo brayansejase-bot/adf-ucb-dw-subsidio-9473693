@@ -1,0 +1,87 @@
+{
+	"name": "df_sedem_empresas",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sedem_empresas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_empresas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empresa_id as string,",
+				"          sigla as string,",
+				"          nombre as string,",
+				"          descripcion as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(empresa_id = toInteger(empresa_id),",
+				"          sigla = trim(toString(sigla)),",
+				"          nombre = trim(toString(nombre)),",
+				"          descripcion = iif(isNull(descripcion) || trim(toString(descripcion)) == '', toString(null()), trim(toString(descripcion))),",
+				"          nit = iif(isNull(nit) || trim(toString(nit)) == '', toString(null()), trim(toString(nit))),",
+				"          municipio = trim(toString(municipio)),",
+				"          departamento = trim(toString(departamento)),",
+				"          estado = trim(toString(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empresa_id as integer,",
+				"          sigla as string,",
+				"          nombre as string,",
+				"          descripcion as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          empresa_id,",
+				"          sigla,",
+				"          nombre,",
+				"          descripcion,",
+				"          nit,",
+				"          municipio,",
+				"          departamento,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

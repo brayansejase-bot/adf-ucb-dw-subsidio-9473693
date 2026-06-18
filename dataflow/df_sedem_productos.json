@@ -1,0 +1,71 @@
+{
+	"name": "df_sedem_productos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sedem_productos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_productos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          producto_id as string,",
+				"          empresa_id as string,",
+				"          nombre as string,",
+				"          categoria as string,",
+				"          presentacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(producto_id = toInteger(producto_id),",
+				"          empresa_id = toInteger(empresa_id),",
+				"          nombre = trim(toString(nombre)),",
+				"          categoria = iif(isNull(categoria) || trim(toString(categoria)) == '', toString(null()), trim(toString(categoria))),",
+				"          presentacion = iif(isNull(presentacion) || trim(toString(presentacion)) == '', toString(null()), trim(toString(presentacion))),",
+				"          estado = trim(toString(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          producto_id as integer,",
+				"          empresa_id as integer,",
+				"          nombre as string,",
+				"          categoria as string,",
+				"          presentacion as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

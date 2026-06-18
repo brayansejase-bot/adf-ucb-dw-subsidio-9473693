@@ -1,0 +1,115 @@
+{
+	"name": "df_sedem_control_calidad",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sedem_control_calidad_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_control_calidad",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_id as string,",
+				"          produccion_id as string,",
+				"          nro_lote as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          parametro as string,",
+				"          valor_medido as string,",
+				"          unidad_medida as string,",
+				"          valor_minimo as string,",
+				"          valor_maximo as string,",
+				"          cumple as string,",
+				"          inspector as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(control_id = toInteger(control_id),",
+				"          produccion_id = toInteger(produccion_id),",
+				"          nro_lote = trim(nro_lote),",
+				"          nro_control = toInteger(nro_control),",
+				"          fecha_control = coalesce( \r",
+				"    toDate(trim(fecha_control), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_control), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_control), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_control), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_control), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_control), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_control), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_control), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_control), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          parametro = initCap(trim(parametro)),",
+				"          valor_medido = toDecimal(toString(valor_medido), 10, 4),",
+				"          unidad_medida = upper(trim(unidad_medida)),",
+				"          valor_minimo = toDecimal(toString(valor_minimo), 10, 4),",
+				"          valor_maximo = toDecimal(toString(valor_maximo), 10, 4),",
+				"          cumple = toBoolean(toString(iif(startsWith(upper(trim(cumple)), 'S'), 1,0))) ,",
+				"          inspector = iif(isNull(inspector) || trim(inspector) == '', toString(null()),\r",
+				"    initCap(\r",
+				"        trim(inspector)\r",
+				"    )\r",
+				")) ~> derivedColumn1",
+				"derivedColumn1 derive(inspector = replace(\r",
+				"    replace(\r",
+				"        replace(trim(inspector), 'Joge', 'Jorge'),\r",
+				"        'Ccolque', 'Colque'\r",
+				"    ),\r",
+				"    'Huanc', 'Huanca'\r",
+				"),",
+				"          fecha_control = iif(isNull(fecha_control), toDate('1900-01-01', 'yyyy-MM-dd'), fecha_control),",
+				"          valor_medido = iif(isNull(valor_medido), toDecimal(0), toDecimal(valor_medido, 10, 4))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_id as integer,",
+				"          produccion_id as integer,",
+				"          nro_lote as string,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          parametro as string,",
+				"          valor_medido as decimal(10,4),",
+				"          unidad_medida as string,",
+				"          valor_minimo as decimal(10,4),",
+				"          valor_maximo as decimal(10,4),",
+				"          cumple as boolean,",
+				"          inspector as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

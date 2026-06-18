@@ -1,0 +1,74 @@
+{
+	"name": "df_sedem_plantas",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sedem_plantas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_plantas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          planta_id as string,",
+				"          empresa_id as string,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          tipo as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(planta_id = toInteger(planta_id),",
+				"          empresa_id = toInteger(empresa_id),",
+				"          nombre = trim(toString(nombre)),",
+				"          municipio = trim(toString(municipio)),",
+				"          departamento = trim(toString(departamento)),",
+				"          tipo = trim(toString(tipo)),",
+				"          estado = trim(toString(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          planta_id as integer,",
+				"          empresa_id as integer,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          tipo as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

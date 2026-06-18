@@ -1,0 +1,51 @@
+{
+	"name": "silver_agencia_almacenes",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Silver"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "almacen_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nombre",
+				"type": "nvarchar"
+			},
+			{
+				"name": "municipio",
+				"type": "nvarchar"
+			},
+			{
+				"name": "departamento",
+				"type": "nvarchar"
+			},
+			{
+				"name": "direccion",
+				"type": "nvarchar"
+			},
+			{
+				"name": "capacidad_m3",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "agencia_almacenes"
+		}
+	}
+}

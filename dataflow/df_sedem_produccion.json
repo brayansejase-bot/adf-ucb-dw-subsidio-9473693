@@ -1,0 +1,119 @@
+{
+	"name": "df_sedem_produccion",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sedem_produccion_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_produccion",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          produccion_id as string,",
+				"          empresa_id as string,",
+				"          planta_id as string,",
+				"          producto_id as string,",
+				"          nro_lote as string,",
+				"          fecha_produccion as string,",
+				"          cantidad as string,",
+				"          unidad as string,",
+				"          turno as string,",
+				"          responsable as string,",
+				"          costo_produccion as string,",
+				"          estado as string,",
+				"          fecha_vencimiento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(produccion_id = toInteger(produccion_id),",
+				"          empresa_id = toInteger(empresa_id),",
+				"          planta_id = toInteger(planta_id),",
+				"          producto_id = toInteger(producto_id),",
+				"          nro_lote = trim(toString(nro_lote)),",
+				"          fecha_produccion = coalesce( \r",
+				"    toDate(trim(fecha_produccion), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_produccion), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_produccion), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_produccion), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_produccion), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_produccion), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_produccion), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_produccion), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_produccion), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          cantidad = toDecimal(toString(cantidad), 12, 3),",
+				"          unidad = lower(trim(toString(unidad))),",
+				"          turno = iif(isNull(turno) || trim(toString(turno)) == '', toString(null()), initCap(lower(trim(toString(turno))))),",
+				"          responsable = iif(isNull(responsable) || trim(toString(responsable)) == '', toString(null()), initCap(trim(toString(responsable)))),",
+				"          costo_produccion = iif(isNull(costo_produccion) || trim(toString(costo_produccion)) == '', toDecimal(null()), toDecimal(toString(costo_produccion), 14, 2)),",
+				"          estado = initCap(lower(trim(toString(estado)))),",
+				"          fecha_vencimiento = coalesce( \r",
+				"    toDate(trim(fecha_vencimiento), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_vencimiento), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_vencimiento), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_vencimiento), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_vencimiento), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_vencimiento), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_vencimiento), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_vencimiento), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_vencimiento), \"dd 'de' MMMM 'de' yyyy\")\r",
+				")) ~> derivedColumn1",
+				"derivedColumn1 derive(estado = iif(isNull(estado) || trim(toString(estado)) == '', trim(toString('Rechazado')), trim(estado)),",
+				"          costo_produccion = iif(isNull(costo_produccion), toDecimal(0), toDecimal(costo_produccion, 14, 2)),",
+				"          turno = iif(isNull(turno), 'Sin especificar', turno),",
+				"          responsable = iif(isNull(responsable), 'Sin especificar', responsable)) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          produccion_id as integer,",
+				"          empresa_id as integer,",
+				"          planta_id as integer,",
+				"          producto_id as integer,",
+				"          nro_lote as string,",
+				"          fecha_produccion as date,",
+				"          cantidad as decimal(12,3),",
+				"          unidad as string,",
+				"          turno as string,",
+				"          responsable as string,",
+				"          costo_produccion as decimal(14,2),",
+				"          estado as string,",
+				"          fecha_vencimiento as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

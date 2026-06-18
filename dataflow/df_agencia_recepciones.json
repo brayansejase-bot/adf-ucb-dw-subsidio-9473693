@@ -1,0 +1,107 @@
+{
+	"name": "df_agencia_recepciones",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "as_recepciones_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_agencia_recepciones",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_recepcion as string,",
+				"          cantidad_recibida as string,",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_remision as string,",
+				"          temperatura_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(recepcion_id = toInteger(recepcion_id),",
+				"          almacen_id = toInteger(almacen_id),",
+				"          transportista_id = toInteger(transportista_id),",
+				"          vehiculo_id = toInteger(vehiculo_id),",
+				"          fecha_recepcion = coalesce( \r",
+				"    toDate(trim(fecha_recepcion), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_recepcion), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_recepcion), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_recepcion), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_recepcion), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_recepcion), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_recepcion), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_recepcion), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_recepcion), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          cantidad_recibida = toDecimal(toString(cantidad_recibida), 12, 3),",
+				"          unidad = iif(isNull(unidad) || trim(toString(unidad)) == '', toString(null()), initCap(trim(toString(unidad)))),",
+				"          condicion = iif(isNull(condicion) || trim(toString(condicion)) == '', toString(null()), initCap(trim(toString(condicion)))),",
+				"          estado = iif(isNull(estado) || trim(toString(estado)) == '', toString(null()), initCap(trim(toString(estado)))),",
+				"          responsable = iif(isNull(responsable) || trim(toString(responsable)) == '', toString(null()), initCap(trim(toString(responsable)))),",
+				"          temperatura_llegada = toDecimal(toString(temperatura_llegada), 5, 2)) ~> derivedColumn1",
+				"derivedColumn1 derive(condicion = iif(isNull(condicion), 'Sin especificar', condicion),",
+				"          estado = iif(isNull(estado), 'Sin especificar', estado),",
+				"          responsable = iif(isNull(responsable), 'Sin especificar', responsable),",
+				"          temperatura_llegada = iif(isNull(temperatura_llegada), toDecimal(0), toDecimal(temperatura_llegada, 5, 2))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          recepcion_id as integer,",
+				"          nro_lote as string,",
+				"          almacen_id as integer,",
+				"          transportista_id as integer,",
+				"          vehiculo_id as integer,",
+				"          fecha_recepcion as date,",
+				"          cantidad_recibida as decimal(12,3),",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_remision as string,",
+				"          temperatura_llegada as decimal(5,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
