@@ -1,0 +1,104 @@
+{
+	"name": "df_bja_pagos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bja_pagos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pago_id as string,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as string,",
+				"          fecha_pago as string,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(pago_id = toInteger(pago_id),",
+				"          concepto_pago = iif(isNull(concepto_pago) || trim(toString(concepto_pago)) == '', toString(null()), initCap(lower(trim(toString(concepto_pago))))),",
+				"          monto_bs = toDecimal(toString(monto_bs),10, 2),",
+				"          fecha_pago = \r",
+				"coalesce( \r",
+				"    toDate(trim(fecha_pago), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_pago), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_pago), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_pago), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_pago), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_pago), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_pago), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_pago), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_pago), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          estado_pago = iif(isNull(estado_pago) || trim(toString(estado_pago)) == '', toString(null()), initCap(lower(trim(toString(estado_pago))))),",
+				"          canal_pago = iif(isNull(canal_pago) || trim(toString(canal_pago)) == '', toString(null()), initCap(lower(trim(toString(canal_pago))))),",
+				"          nro_comprobante = iif(isNull(nro_comprobante) || trim(toString(nro_comprobante)) == '', toString(null()), nro_comprobante)) ~> derivedColumn1",
+				"derivedColumn1 derive(concepto_pago = iif(isNull(concepto_pago), 'Sin especificar', concepto_pago),",
+				"          estado_pago = iif(isNull(estado_pago), 'Sin especificar',estado_pago),",
+				"          canal_pago = iif(isNull(canal_pago), 'Sin especificar', canal_pago),",
+				"          nro_comprobante = iif(isNull(nro_comprobante), 'Sin especificar', nro_comprobante)) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          pago_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as decimal(10,2),",
+				"          fecha_pago as date,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          pago_id,",
+				"          ci_beneficiaria,",
+				"          concepto_pago,",
+				"          monto_bs,",
+				"          fecha_pago,",
+				"          estado_pago,",
+				"          canal_pago,",
+				"          nro_comprobante",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

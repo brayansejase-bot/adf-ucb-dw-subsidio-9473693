@@ -1,0 +1,46 @@
+{
+	"name": "gold_dim_producto_sedem",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "producto_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "producto_id_origen",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nombre_producto",
+				"type": "nvarchar"
+			},
+			{
+				"name": "categoria",
+				"type": "nvarchar"
+			},
+			{
+				"name": "presentacion",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "dim_producto_sedem"
+		}
+	}
+}

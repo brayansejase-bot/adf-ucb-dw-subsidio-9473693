@@ -1,18 +1,18 @@
 {
-	"name": "silver_bja_establecimientos_salud",
+	"name": "gold_dim_establecimiento",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "dw_subsidio",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
-			"name": "Silver"
+			"name": "gold"
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "establecimiento_id",
+				"name": "establecimiento_key",
 				"type": "int",
 				"precision": 10
 			},
@@ -47,11 +47,15 @@
 			{
 				"name": "estado",
 				"type": "nvarchar"
+			},
+			{
+				"name": "origen_dato",
+				"type": "nvarchar"
 			}
 		],
 		"typeProperties": {
-			"schema": "silver",
-			"table": "bja_establecimientos_salud"
+			"schema": "gold",
+			"table": "dim_establecimiento"
 		}
 	}
 }

@@ -1,0 +1,106 @@
+{
+	"name": "df_sup_entrega_paquetes",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_entregas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_entregas_paquetes",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_id as string,",
+				"          boleta_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          paquete_id as string,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as string,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as string,",
+				"          fecha_proxima_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(entrega_id = toInteger(entrega_id),",
+				"          boleta_id = toInteger(boleta_id),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          paquete_id = toInteger(paquete_id),",
+				"          fecha_entrega = coalesce( \r",
+				"    toDate(trim(fecha_entrega), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_entrega), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_entrega), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_entrega), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_entrega), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_entrega), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_entrega), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_entrega), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_entrega), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          lote_produccion = iif(isNull(lote_produccion) || trim(toString(lote_produccion)) == '', toString(null()), lote_produccion),",
+				"          peso_paquete_kg = toDecimal(toString(peso_paquete_kg), 5, 2),",
+				"          fecha_proxima_entrega = coalesce( \r",
+				"    toDate(trim(fecha_proxima_entrega), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_proxima_entrega), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_proxima_entrega), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_proxima_entrega), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_proxima_entrega), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_proxima_entrega), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_proxima_entrega), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_proxima_entrega), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_proxima_entrega), \"dd 'de' MMMM 'de' yyyy\")\r",
+				")) ~> derivedColumn1",
+				"derivedColumn1 derive(lote_produccion = iif(isNull(lote_produccion), 'Sin especificar', lote_produccion)\r",
+				",",
+				"          peso_paquete_kg = iif(isNull(peso_paquete_kg), toDecimal(0), toDecimal(peso_paquete_kg, 5, 2))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_id as integer,",
+				"          boleta_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          paquete_id as integer,",
+				"          fecha_entrega as date,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as decimal(5,2),",
+				"          fecha_proxima_entrega as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

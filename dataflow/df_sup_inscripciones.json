@@ -1,0 +1,80 @@
+{
+	"name": "df_sup_inscripciones",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_inscripciones_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          inscripcion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          fecha_inscripcion as string,",
+				"          semana_gestacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(inscripcion_id = toInteger(inscripcion_id),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          fecha_inscripcion = coalesce( \r",
+				"    toDate(trim(fecha_inscripcion), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_inscripcion), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_inscripcion), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_inscripcion), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_inscripcion), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_inscripcion), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_inscripcion), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_inscripcion), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_inscripcion), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          semana_gestacion = toInteger(semana_gestacion),",
+				"          estado = iif(isNull(estado), 'Sin especificar', estado)) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          inscripcion_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          fecha_inscripcion as date,",
+				"          semana_gestacion as integer,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

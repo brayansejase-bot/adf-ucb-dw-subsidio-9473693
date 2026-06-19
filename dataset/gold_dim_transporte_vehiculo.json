@@ -1,0 +1,65 @@
+{
+	"name": "gold_dim_transporte_vehiculo",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "transporte_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "transportista_id_origen",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "razon_social",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nit",
+				"type": "nvarchar"
+			},
+			{
+				"name": "transportista_estado",
+				"type": "nvarchar"
+			},
+			{
+				"name": "vehiculo_id_origen",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "placa",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tipo_vehiculo",
+				"type": "nvarchar"
+			},
+			{
+				"name": "capacidad_kg",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "vehiculo_estado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "dim_transporte_vehiculo"
+		}
+	}
+}

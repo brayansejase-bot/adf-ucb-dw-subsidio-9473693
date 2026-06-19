@@ -1,0 +1,83 @@
+{
+	"name": "df_dim_personas",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_persona",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ci as string,",
+				"          nombre_completo as string,",
+				"          fecha_nac as date,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          municipio as string,",
+				"          edad_actual as integer,",
+				"          tiene_datos_segip as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\r\\n    t.ci,\\r\\n    s.nombres + \\' \\' + ISNULL(s.ap_paterno,\\'\\') + \\' \\' + ISNULL(s.ap_materno,\\'\\') AS nombre_completo,\\r\\n    s.fecha_nac,\\r\\n    s.genero,\\r\\n    s.estado_civil,\\r\\n    s.municipio,\\r\\n    CASE WHEN s.fecha_nac IS NOT NULL THEN DATEDIFF(YEAR, s.fecha_nac, GETDATE()) ELSE NULL END AS edad_actual,\\r\\n    CASE WHEN s.ci IS NOT NULL THEN 1 ELSE 0 END AS tiene_datos_segip\\r\\nFROM (\\r\\n    SELECT ci_beneficiaria AS ci FROM silver.bja_inscripciones\\r\\n    UNION SELECT ci_beneficiaria FROM silver.bja_controles_prenatales\\r\\n    UNION SELECT ci_madre FROM silver.bja_partos\\r\\n    UNION SELECT ci_recien_nacido FROM silver.bja_partos WHERE ci_recien_nacido IS NOT NULL\\r\\n    UNION SELECT ci_nino FROM silver.bja_controles_pediatricos\\r\\n    UNION SELECT ci_madre FROM silver.bja_controles_pediatricos\\r\\n    UNION SELECT ci_beneficiaria FROM silver.bja_pagos\\r\\n    UNION SELECT ci_beneficiaria FROM silver.sup_inscripciones\\r\\n    UNION SELECT ci_beneficiaria FROM silver.sup_controles\\r\\n    UNION SELECT ci_beneficiaria FROM silver.sup_boletas\\r\\n    UNION SELECT ci_beneficiaria FROM silver.sup_entregas_paquetes\\r\\n) AS t\\r\\nLEFT JOIN silver.segip_personas s\\r\\n    ON t.ci = s.ci',",
+				"     format: 'query') ~> source1",
+				"source1 derive(tiene_datos_segip = toBoolean(toString(tiene_datos_segip))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          persona_key as integer,",
+				"          ci as string,",
+				"          nombre_completo as string,",
+				"          fecha_nac as date,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          municipio as string,",
+				"          edad_actual as integer,",
+				"          tiene_datos_segip as boolean",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ci,",
+				"          nombre_completo,",
+				"          fecha_nac,",
+				"          genero,",
+				"          estado_civil,",
+				"          municipio,",
+				"          edad_actual,",
+				"          tiene_datos_segip",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

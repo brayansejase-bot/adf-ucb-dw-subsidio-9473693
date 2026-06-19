@@ -1,35 +1,41 @@
 {
-	"name": "silver_bja_establecimientos_salud",
+	"name": "gol_empresa_planta",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "dw_subsidio",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
-			"name": "Silver"
+			"name": "gold"
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "establecimiento_id",
+				"name": "empresa_planta_key",
 				"type": "int",
 				"precision": 10
 			},
 			{
-				"name": "codigo_snis",
+				"name": "empresa_id_origen",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "sigla_empresa",
 				"type": "nvarchar"
 			},
 			{
-				"name": "nombre",
+				"name": "nombre_empresa",
 				"type": "nvarchar"
 			},
 			{
-				"name": "tipo",
-				"type": "nvarchar"
+				"name": "planta_id_origen",
+				"type": "int",
+				"precision": 10
 			},
 			{
-				"name": "nivel_atencion",
+				"name": "nombre_planta",
 				"type": "nvarchar"
 			},
 			{
@@ -41,7 +47,7 @@
 				"type": "nvarchar"
 			},
 			{
-				"name": "red_salud",
+				"name": "tipo_planta",
 				"type": "nvarchar"
 			},
 			{
@@ -50,8 +56,8 @@
 			}
 		],
 		"typeProperties": {
-			"schema": "silver",
-			"table": "bja_establecimientos_salud"
+			"schema": "gold",
+			"table": "dim_empresa_planta"
 		}
 	}
 }

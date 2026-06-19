@@ -1,0 +1,70 @@
+{
+	"name": "df_dim_empresa_planta",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_empresas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gol_empresa_planta",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          empresa_id_origen as integer,",
+				"          sigla_empresa as string,",
+				"          nombre_empresa as string,",
+				"          planta_id_origen as integer,",
+				"          nombre_planta as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          tipo_planta as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\r\\n    e.empresa_id     AS empresa_id_origen,\\r\\n    e.sigla           AS sigla_empresa,\\r\\n    e.nombre          AS nombre_empresa,\\r\\n    p.planta_id       AS planta_id_origen,\\r\\n    p.nombre          AS nombre_planta,\\r\\n    p.municipio,\\r\\n    p.departamento,\\r\\n    p.tipo            AS tipo_planta,\\r\\n    p.estado\\r\\nFROM silver.sedem_empresas e\\r\\nINNER JOIN silver.sedem_plantas p\\r\\n    ON e.empresa_id = p.empresa_id',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empresa_planta_key as integer,",
+				"          empresa_id_origen as integer,",
+				"          sigla_empresa as string,",
+				"          nombre_empresa as string,",
+				"          planta_id_origen as integer,",
+				"          nombre_planta as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          tipo_planta as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

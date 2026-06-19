@@ -13,6 +13,13 @@
 						"type": "DatasetReference"
 					},
 					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "sedem_produccion_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
 				}
 			],
 			"sinks": [
@@ -30,6 +37,9 @@
 				},
 				{
 					"name": "derivedColumn2"
+				},
+				{
+					"name": "exists1"
 				}
 			],
 			"scriptLines": [
@@ -50,7 +60,25 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 derive(control_id = toInteger(control_id),",
+				"source(output(",
+				"          produccion_id as string,",
+				"          empresa_id as string,",
+				"          planta_id as string,",
+				"          producto_id as string,",
+				"          nro_lote as string,",
+				"          fecha_produccion as string,",
+				"          cantidad as string,",
+				"          unidad as string,",
+				"          turno as string,",
+				"          responsable as string,",
+				"          costo_produccion as string,",
+				"          estado as string,",
+				"          fecha_vencimiento as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"exists1 derive(control_id = toInteger(control_id),",
 				"          produccion_id = toInteger(produccion_id),",
 				"          nro_lote = trim(nro_lote),",
 				"          nro_control = toInteger(nro_control),",
@@ -84,7 +112,12 @@
 				"    'Huanc', 'Huanca'\r",
 				"),",
 				"          fecha_control = iif(isNull(fecha_control), toDate('1900-01-01', 'yyyy-MM-dd'), fecha_control),",
-				"          valor_medido = iif(isNull(valor_medido), toDecimal(0), toDecimal(valor_medido, 10, 4))) ~> derivedColumn2",
+				"          valor_medido = iif(isNull(valor_medido), toDecimal(0), toDecimal(valor_medido, 10, 4)),",
+				"          parametro = \r",
+				"iif(isNull(parametro), 'Sin especificar', parametro)) ~> derivedColumn2",
+				"source1, source2 exists(source1@produccion_id == source2@produccion_id,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> exists1",
 				"derivedColumn2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",

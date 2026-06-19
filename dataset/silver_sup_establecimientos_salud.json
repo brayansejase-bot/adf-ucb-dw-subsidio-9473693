@@ -1,5 +1,5 @@
 {
-	"name": "silver_bja_establecimientos_salud",
+	"name": "silver_sup_establecimientos_salud",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "dw_subsidio",
@@ -51,7 +51,7 @@
 		],
 		"typeProperties": {
 			"schema": "silver",
-			"table": "bja_establecimientos_salud"
+			"table": "sup_establecimientos_salud"
 		}
 	}
 }

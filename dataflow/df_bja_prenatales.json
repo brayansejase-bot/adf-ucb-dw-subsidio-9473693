@@ -1,0 +1,97 @@
+{
+	"name": "df_bja_prenatales",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bja_controles_prenatales_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_controles_prenatales",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_prenatal_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(control_prenatal_id = toInteger(control_prenatal_id),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          nro_control = toInteger(nro_control),",
+				"          fecha_control = coalesce( \r",
+				"    toDate(trim(fecha_control), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_control), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_control), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_control), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_control), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_control), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_control), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_control), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_control), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          semana_gestacion = toInteger(semana_gestacion),",
+				"          peso_madre_kg = toDecimal(toString(peso_madre_kg), 5, 1),",
+				"          presion_arterial = iif(isNull(presion_arterial) || trim(toString(presion_arterial)) == '', toString(null()), presion_arterial),",
+				"          resultado = iif(isNull(resultado) || trim(toString(resultado)) == '', toString(null()), initCap(lower(trim(toString(resultado)))))) ~> derivedColumn1",
+				"derivedColumn1 derive(peso_madre_kg = iif(isNull(peso_madre_kg), toDecimal(0), toDecimal(peso_madre_kg, 5, 1)),",
+				"          presion_arterial = iif(isNull(presion_arterial), 'Sin especificar', presion_arterial),",
+				"          semana_gestacion = iif(isNull(semana_gestacion), 0, semana_gestacion),",
+				"          resultado = iif(isNull(resultado), 'Sin especificar', resultado),",
+				"          fecha_control = iif(isNull(fecha_control), toDate('1900-01-01', 'yyyy-MM-dd'), fecha_control)) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_prenatal_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(5,1),",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

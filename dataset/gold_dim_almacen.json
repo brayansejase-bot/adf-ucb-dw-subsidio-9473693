@@ -1,35 +1,28 @@
 {
-	"name": "silver_bja_establecimientos_salud",
+	"name": "gold_dim_almacen",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "dw_subsidio",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
-			"name": "Silver"
+			"name": "gold"
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "establecimiento_id",
+				"name": "almacen_key",
 				"type": "int",
 				"precision": 10
 			},
 			{
-				"name": "codigo_snis",
-				"type": "nvarchar"
+				"name": "almacen_id_origen",
+				"type": "int",
+				"precision": 10
 			},
 			{
 				"name": "nombre",
-				"type": "nvarchar"
-			},
-			{
-				"name": "tipo",
-				"type": "nvarchar"
-			},
-			{
-				"name": "nivel_atencion",
 				"type": "nvarchar"
 			},
 			{
@@ -41,8 +34,10 @@
 				"type": "nvarchar"
 			},
 			{
-				"name": "red_salud",
-				"type": "nvarchar"
+				"name": "capacidad_m3",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
 			},
 			{
 				"name": "estado",
@@ -50,8 +45,8 @@
 			}
 		],
 		"typeProperties": {
-			"schema": "silver",
-			"table": "bja_establecimientos_salud"
+			"schema": "gold",
+			"table": "dim_almacen"
 		}
 	}
 }

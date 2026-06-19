@@ -1,0 +1,83 @@
+{
+	"name": "df_sup_boletas",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_boletas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_boletas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          boleta_id as string,",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          nro_boleta as string,",
+				"          fecha_emision as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(boleta_id = toInteger(boleta_id),",
+				"          control_id = toInteger(control_id),",
+				"          fecha_emision = coalesce( \r",
+				"    toDate(trim(fecha_emision), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_emision), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_emision), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_emision), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_emision), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_emision), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_emision), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_emision), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_emision), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          estado = iif(isNull(estado) || trim(toString(estado)) == '', toString(null()), initCap(lower(trim(toString(estado)))))) ~> derivedColumn1",
+				"derivedColumn1 derive(estado = iif(isNull(estado), 'Sin especificar', estado)) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          boleta_id as integer,",
+				"          control_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          nro_boleta as string,",
+				"          fecha_emision as date,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

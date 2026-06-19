@@ -1,35 +1,39 @@
 {
-	"name": "silver_bja_establecimientos_salud",
+	"name": "gold_dim_persona",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "dw_subsidio",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
-			"name": "Silver"
+			"name": "gold"
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "establecimiento_id",
+				"name": "persona_key",
 				"type": "int",
 				"precision": 10
 			},
 			{
-				"name": "codigo_snis",
+				"name": "ci",
 				"type": "nvarchar"
 			},
 			{
-				"name": "nombre",
+				"name": "nombre_completo",
 				"type": "nvarchar"
 			},
 			{
-				"name": "tipo",
-				"type": "nvarchar"
+				"name": "fecha_nac",
+				"type": "date"
 			},
 			{
-				"name": "nivel_atencion",
+				"name": "genero",
+				"type": "nchar"
+			},
+			{
+				"name": "estado_civil",
 				"type": "nvarchar"
 			},
 			{
@@ -37,21 +41,18 @@
 				"type": "nvarchar"
 			},
 			{
-				"name": "departamento",
-				"type": "nvarchar"
+				"name": "edad_actual",
+				"type": "int",
+				"precision": 10
 			},
 			{
-				"name": "red_salud",
-				"type": "nvarchar"
-			},
-			{
-				"name": "estado",
-				"type": "nvarchar"
+				"name": "tiene_datos_segip",
+				"type": "bit"
 			}
 		],
 		"typeProperties": {
-			"schema": "silver",
-			"table": "bja_establecimientos_salud"
+			"schema": "gold",
+			"table": "dim_persona"
 		}
 	}
 }

@@ -1,0 +1,160 @@
+{
+	"name": "df_agencia_despachos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "as_despachos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_recepciones_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_agencia_despachos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "exists1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          despacho_id as string,",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_despacho as string,",
+				"          cantidad_despachada as string,",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source(output(",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_recepcion as string,",
+				"          cantidad_recibida as string,",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_remision as string,",
+				"          temperatura_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"exists1 derive(despacho_id =  toInteger(despacho_id),",
+				"          recepcion_id =  toInteger(recepcion_id),",
+				"          almacen_id =  toInteger(almacen_id),",
+				"          transportista_id =  toInteger(transportista_id),",
+				"          vehiculo_id =  toInteger(vehiculo_id),",
+				"          fecha_despacho = coalesce( \r",
+				"    toDate(trim(fecha_despacho), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_despacho), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_despacho), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_despacho), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_despacho), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_despacho), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_despacho), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_despacho), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_despacho), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          cantidad_despachada = toDecimal(toString(cantidad_despachada), 12, 3),",
+				"          centro_destino = iif(isNull(centro_destino) || trim(toString(centro_destino)) == '', toString(null()), initCap(lower(trim(toString(centro_destino))))),",
+				"          estado = iif(isNull(estado) || trim(toString(estado)) == '', toString(null()), initCap(lower(trim(toString(estado))))),",
+				"          responsable = iif(isNull(responsable) || trim(toString(responsable)) == '', toString(null()), initCap(lower(trim(toString(responsable))))),",
+				"          fecha_llegada = coalesce( \r",
+				"    toDate(trim(fecha_llegada), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_llegada), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_llegada), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_llegada), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_llegada), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_llegada), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_llegada), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_llegada), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_llegada), \"dd 'de' MMMM 'de' yyyy\")\r",
+				")) ~> derivedColumn1",
+				"derivedColumn1 derive(fecha_despacho = iif(isNull(fecha_despacho), toDate('1900-01-01', 'yyyy-MM-dd'), fecha_despacho),",
+				"          cantidad_despachada = iif(isNull(cantidad_despachada), toDecimal(0), toDecimal(cantidad_despachada, 12, 3)),",
+				"          centro_destino = iif(isNull(centro_destino), 'Sin especificar', centro_destino),",
+				"          estado = case(\r",
+				"  in(['Deespachado','Dspachado','Despachaod','Despachao','Despaachado'], estado), 'Despachado',\r",
+				"  in(['Devueelto'], estado), 'Devuelto',\r",
+				"  estado\r",
+				")\r",
+				",",
+				"          responsable = iif(isNull(responsable), 'Sin especificar', responsable)\r",
+				") ~> derivedColumn2",
+				"derivedColumn2 derive(estado = iif(isNull(estado), 'Sin especificar', estado)\r",
+				") ~> derivedColumn3",
+				"source1, source2 exists(source1@recepcion_id == source2@recepcion_id,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> exists1",
+				"derivedColumn3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          despacho_id as integer,",
+				"          recepcion_id as integer,",
+				"          nro_lote as string,",
+				"          almacen_id as integer,",
+				"          transportista_id as integer,",
+				"          vehiculo_id as integer,",
+				"          fecha_despacho as date,",
+				"          cantidad_despachada as decimal(12,3),",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

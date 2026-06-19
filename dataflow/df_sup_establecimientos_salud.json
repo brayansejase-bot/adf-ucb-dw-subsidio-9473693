@@ -1,5 +1,5 @@
 {
-	"name": "df_bja_establecimientos_salud",
+	"name": "df_sup_establecimientos_salud",
 	"properties": {
 		"folder": {
 			"name": "silver"
@@ -9,16 +9,16 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "bja_establecimientos_salud_csv",
+						"referenceName": "sup_establecimientos_csv",
 						"type": "DatasetReference"
 					},
-					"name": "bjaestab"
+					"name": "source1"
 				}
 			],
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "silver_bja_establecimientos_salud",
+						"referenceName": "silver_sup_establecimientos_salud",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -26,7 +26,7 @@
 			],
 			"transformations": [
 				{
-					"name": "derivedColumn2"
+					"name": "derivedColumn1"
 				}
 			],
 			"scriptLines": [
@@ -43,8 +43,8 @@
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> bjaestab",
-				"bjaestab derive(establecimiento_id = toInteger(establecimiento_id),",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(establecimiento_id = toInteger(establecimiento_id),",
 				"          departamento = case(\r",
 				"  in(['La Paz'], departamento), 'LP',\r",
 				"  in(['Cochabamba','CB'], departamento), 'CBBA',\r",
@@ -56,8 +56,9 @@
 				"  in(['Pando'], departamento), 'PD',\r",
 				"  in(['Potosí','Potosi'], departamento), 'PT',\r",
 				"  departamento\r",
-				")) ~> derivedColumn2",
-				"derivedColumn2 sink(allowSchemaDrift: true,",
+				")\r",
+				") ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          establecimiento_id as integer,",

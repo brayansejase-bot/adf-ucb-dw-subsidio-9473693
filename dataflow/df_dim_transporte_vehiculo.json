@@ -1,0 +1,70 @@
+{
+	"name": "df_dim_transporte_vehiculo",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_agencia_transportistas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_transporte_vehiculo",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          transportista_id_origen as integer,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          transportista_estado as string,",
+				"          vehiculo_id_origen as integer,",
+				"          placa as string,",
+				"          tipo_vehiculo as string,",
+				"          capacidad_kg as decimal(10,2),",
+				"          vehiculo_estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\r\\n    t.transportista_id   AS transportista_id_origen,\\r\\n    t.razon_social,\\r\\n    t.nit,\\r\\n    t.estado              AS transportista_estado,\\r\\n    v.vehiculo_id         AS vehiculo_id_origen,\\r\\n    v.placa,\\r\\n    v.tipo                AS tipo_vehiculo,\\r\\n    v.capacidad_kg,\\r\\n    v.estado              AS vehiculo_estado\\r\\nFROM silver.agencia_transportistas t\\r\\nINNER JOIN silver.agencia_vehiculos v\\r\\n    ON t.transportista_id = v.transportista_id',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          transporte_key as integer,",
+				"          transportista_id_origen as integer,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          transportista_estado as string,",
+				"          vehiculo_id_origen as integer,",
+				"          placa as string,",
+				"          tipo_vehiculo as string,",
+				"          capacidad_kg as decimal(10,2),",
+				"          vehiculo_estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

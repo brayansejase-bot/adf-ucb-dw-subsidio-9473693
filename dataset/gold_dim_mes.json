@@ -1,0 +1,35 @@
+{
+	"name": "gold_dim_mes",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "mes_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "anio",
+				"type": "smallint",
+				"precision": 5
+			},
+			{
+				"name": "mes",
+				"type": "tinyint",
+				"precision": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "dim_mes"
+		}
+	}
+}

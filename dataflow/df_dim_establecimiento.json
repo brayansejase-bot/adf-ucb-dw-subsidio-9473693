@@ -1,0 +1,81 @@
+{
+	"name": "df_dim_establecimiento",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_establecimientos_salud",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_establecimiento",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string,",
+				"          origen_dato as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\r\\n    codigo_snis,\\r\\n    nombre,\\r\\n    tipo,\\r\\n    nivel_atencion,\\r\\n    municipio,\\r\\n    departamento,\\r\\n    red_salud,\\r\\n    estado,\\r\\n    CASE\\r\\n        WHEN codigo_snis IN (SELECT codigo_snis FROM silver.sup_establecimientos_salud) THEN \\'AMBOS\\'\\r\\n        ELSE \\'BJA\\'\\r\\n    END AS origen_dato\\r\\nFROM silver.bja_establecimientos_salud\\r\\n\\r\\nUNION\\r\\n\\r\\nSELECT\\r\\n    s.codigo_snis,\\r\\n    s.nombre,\\r\\n    s.tipo,\\r\\n    s.nivel_atencion,\\r\\n    s.municipio,\\r\\n    s.departamento,\\r\\n    s.red_salud,\\r\\n    s.estado,\\r\\n    CASE\\r\\n        WHEN s.codigo_snis IN (SELECT codigo_snis FROM silver.bja_establecimientos_salud) THEN \\'AMBOS\\'\\r\\n        ELSE \\'SUP\\'\\r\\n    END AS origen_dato\\r\\nFROM silver.sup_establecimientos_salud s\\r\\nWHERE s.codigo_snis NOT IN (SELECT codigo_snis FROM silver.bja_establecimientos_salud)',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          establecimiento_key as integer,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string,",
+				"          origen_dato as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          codigo_snis,",
+				"          nombre,",
+				"          tipo,",
+				"          nivel_atencion,",
+				"          municipio,",
+				"          departamento,",
+				"          red_salud,",
+				"          estado,",
+				"          origen_dato",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

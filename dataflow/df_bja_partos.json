@@ -1,0 +1,90 @@
+{
+	"name": "df_bja_partos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bja_partos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_partos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          parto_id as string,",
+				"          ci_madre as string,",
+				"          ci_recien_nacido as string,",
+				"          establecimiento_id as string,",
+				"          fecha_parto as string,",
+				"          tipo_parto as string,",
+				"          peso_nacimiento_kg as string,",
+				"          talla_nacimiento_cm as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(parto_id = toInteger(parto_id),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          fecha_parto = coalesce( \r",
+				"    toDate(trim(fecha_parto), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_parto), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_parto), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_parto), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_parto), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_parto), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_parto), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_parto), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_parto), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          tipo_parto = iif(isNull(tipo_parto) || trim(toString(tipo_parto)) == '', toString(null()), initCap(lower(trim(toString(tipo_parto))))),",
+				"          peso_nacimiento_kg = toDecimal(toString(peso_nacimiento_kg), 4, 2),",
+				"          talla_nacimiento_cm = toDecimal(toString(talla_nacimiento_cm), 5, 1)) ~> derivedColumn1",
+				"derivedColumn1 derive(tipo_parto = iif(isNull(tipo_parto), 'Sin especificar', tipo_parto),",
+				"          talla_nacimiento_cm = iif(isNull(talla_nacimiento_cm), toDecimal(0), toDecimal(talla_nacimiento_cm, 5, 1))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          parto_id as integer,",
+				"          ci_madre as string,",
+				"          ci_recien_nacido as string,",
+				"          establecimiento_id as integer,",
+				"          fecha_parto as date,",
+				"          tipo_parto as string,",
+				"          peso_nacimiento_kg as decimal(4,2),",
+				"          talla_nacimiento_cm as decimal(5,1)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

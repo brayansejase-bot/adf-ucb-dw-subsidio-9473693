@@ -1,0 +1,72 @@
+{
+	"name": "df_dim_almacen",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_agencia_almacenes",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_almacen",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          almacen_id_origen as integer,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          capacidad_m3 as decimal(10,2),",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\r\\n    almacen_id    AS almacen_id_origen,\\r\\n    nombre,\\r\\n    municipio,\\r\\n    departamento,\\r\\n    capacidad_m3,\\r\\n    estado\\r\\nFROM silver.agencia_almacenes',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          almacen_key as integer,",
+				"          almacen_id_origen as integer,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          capacidad_m3 as decimal(10,2),",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          almacen_id_origen,",
+				"          nombre,",
+				"          municipio,",
+				"          departamento,",
+				"          capacidad_m3,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

@@ -1,5 +1,5 @@
 {
-	"name": "silver_bja_establecimientos_salud",
+	"name": "silver_bja_partos",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "dw_subsidio",
@@ -12,46 +12,47 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
+				"name": "parto_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_madre",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ci_recien_nacido",
+				"type": "nvarchar"
+			},
+			{
 				"name": "establecimiento_id",
 				"type": "int",
 				"precision": 10
 			},
 			{
-				"name": "codigo_snis",
+				"name": "fecha_parto",
+				"type": "date"
+			},
+			{
+				"name": "tipo_parto",
 				"type": "nvarchar"
 			},
 			{
-				"name": "nombre",
-				"type": "nvarchar"
+				"name": "peso_nacimiento_kg",
+				"type": "decimal",
+				"precision": 4,
+				"scale": 2
 			},
 			{
-				"name": "tipo",
-				"type": "nvarchar"
-			},
-			{
-				"name": "nivel_atencion",
-				"type": "nvarchar"
-			},
-			{
-				"name": "municipio",
-				"type": "nvarchar"
-			},
-			{
-				"name": "departamento",
-				"type": "nvarchar"
-			},
-			{
-				"name": "red_salud",
-				"type": "nvarchar"
-			},
-			{
-				"name": "estado",
-				"type": "nvarchar"
+				"name": "talla_nacimiento_cm",
+				"type": "decimal",
+				"precision": 5,
+				"scale": 1
 			}
 		],
 		"typeProperties": {
 			"schema": "silver",
-			"table": "bja_establecimientos_salud"
+			"table": "bja_partos"
 		}
 	}
 }

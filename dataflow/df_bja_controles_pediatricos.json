@@ -1,0 +1,97 @@
+{
+	"name": "df_bja_controles_pediatricos",
+	"properties": {
+		"folder": {
+			"name": "silver"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bja_controles_pediatricos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_pediatrico_id as string,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          peso_nino_kg as string,",
+				"          talla_nino_cm as string,",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 derive(control_pediatrico_id = toInteger(control_pediatrico_id),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          nro_control = toInteger(nro_control),",
+				"          fecha_control = coalesce( \r",
+				"    toDate(trim(fecha_control), 'MM/dd/yyyy'),\r",
+				"    toDate(trim(fecha_control), 'dd/MM/yyyy'), \r",
+				"    toDate(trim(fecha_control), 'yyyy-MM-dd'), \r",
+				"    toDate(trim(fecha_control), 'MM-dd-yyyy'), \r",
+				"    toDate(trim(fecha_control), 'yyyy/MM/dd'), \r",
+				"    toDate(trim(fecha_control), 'dd-MM-yyyy'),\r",
+				"    toDate(trim(fecha_control), 'dd-MMM-yyyy'),\r",
+				"    toDate(trim(fecha_control), 'MMMM dd, yyyy'),\r",
+				"    toDate(trim(fecha_control), \"dd 'de' MMMM 'de' yyyy\")\r",
+				"),",
+				"          peso_nino_kg = toDecimal(toString(peso_nino_kg), 5, 2),",
+				"          talla_nino_cm = toDecimal(toString(talla_nino_cm), 5, 1),",
+				"          vacuna_aplicada = iif(isNull(vacuna_aplicada) || trim(toString(vacuna_aplicada)) == '', toString(null()), initCap(lower(trim(toString(vacuna_aplicada))))),",
+				"          resultado = iif(isNull(resultado) || trim(toString(resultado)) == '', toString(null()), initCap(lower(trim(toString(resultado)))))) ~> derivedColumn1",
+				"derivedColumn1 derive(vacuna_aplicada = iif(isNull(vacuna_aplicada), 'Sin especificar', vacuna_aplicada),",
+				"          resultado = iif(isNull(resultado), 'Sin especificar',resultado),",
+				"          peso_nino_kg = iif(isNull(peso_nino_kg), toDecimal(0), toDecimal(peso_nino_kg, 5, 2))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_pediatrico_id as integer,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          peso_nino_kg as decimal(5,2),",
+				"          talla_nino_cm as decimal(5,1),",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

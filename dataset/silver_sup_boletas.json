@@ -1,5 +1,5 @@
 {
-	"name": "silver_bja_establecimientos_salud",
+	"name": "silver_sup_boletas",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "dw_subsidio",
@@ -12,37 +12,26 @@
 		"type": "AzureSqlTable",
 		"schema": [
 			{
-				"name": "establecimiento_id",
+				"name": "boleta_id",
 				"type": "int",
 				"precision": 10
 			},
 			{
-				"name": "codigo_snis",
+				"name": "control_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria",
 				"type": "nvarchar"
 			},
 			{
-				"name": "nombre",
+				"name": "nro_boleta",
 				"type": "nvarchar"
 			},
 			{
-				"name": "tipo",
-				"type": "nvarchar"
-			},
-			{
-				"name": "nivel_atencion",
-				"type": "nvarchar"
-			},
-			{
-				"name": "municipio",
-				"type": "nvarchar"
-			},
-			{
-				"name": "departamento",
-				"type": "nvarchar"
-			},
-			{
-				"name": "red_salud",
-				"type": "nvarchar"
+				"name": "fecha_emision",
+				"type": "date"
 			},
 			{
 				"name": "estado",
@@ -51,7 +40,7 @@
 		],
 		"typeProperties": {
 			"schema": "silver",
-			"table": "bja_establecimientos_salud"
+			"table": "sup_boletas"
 		}
 	}
 }

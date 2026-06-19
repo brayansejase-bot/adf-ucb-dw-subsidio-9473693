@@ -1,0 +1,65 @@
+{
+	"name": "df_dim_tiempo",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_tiempo",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          fecha as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT fecha FROM (\\r\\n    SELECT fecha_inscripcion AS fecha FROM silver.bja_inscripciones\\r\\n    UNION ALL SELECT fecha_control FROM silver.bja_controles_prenatales\\r\\n    UNION ALL SELECT fecha_parto FROM silver.bja_partos\\r\\n    UNION ALL SELECT fecha_control FROM silver.bja_controles_pediatricos\\r\\n    UNION ALL SELECT fecha_pago FROM silver.bja_pagos\\r\\n    UNION ALL SELECT fecha_inscripcion FROM silver.sup_inscripciones\\r\\n    UNION ALL SELECT fecha_control FROM silver.sup_controles\\r\\n    UNION ALL SELECT fecha_emision FROM silver.sup_boletas\\r\\n    UNION ALL SELECT fecha_entrega FROM silver.sup_entregas_paquetes\\r\\n    UNION ALL SELECT fecha_recepcion FROM silver.agencia_recepciones\\r\\n    UNION ALL SELECT fecha_despacho FROM silver.agencia_despachos\\r\\n    UNION ALL SELECT fecha_produccion FROM silver.sedem_produccion\\r\\n    UNION ALL SELECT fecha_control FROM silver.sedem_control_calidad\\r\\n) AS todas_fechas\\r\\nWHERE fecha IS NOT NULL',",
+				"     format: 'query') ~> source1",
+				"source1 derive(fecha_key = toInteger(concat(toString(year(fecha)), iif(month(fecha)<10, concat('0',toString(month(fecha))), toString(month(fecha))), iif(dayOfMonth(fecha)<10, concat('0',toString(dayOfMonth(fecha))), toString(dayOfMonth(fecha))))),",
+				"          mes = month(fecha),",
+				"          anio = year(fecha),",
+				"          trimestre = toInteger(ceil(toFloat(month(fecha))/3))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          mes as integer,",
+				"          anio as integer,",
+				"          trimestre as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
