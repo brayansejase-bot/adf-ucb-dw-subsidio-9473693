@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_sup_entrega_paquetes",
+						"referenceName": "df_hechos_sedem_inventario_mensual",
 						"type": "DataFlowReference"
 					},
 					"compute": {

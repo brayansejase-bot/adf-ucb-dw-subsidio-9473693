@@ -1,0 +1,184 @@
+{
+	"name": "df_hechos_sedem_inventario_mensual",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_inventario",
+						"type": "DatasetReference"
+					},
+					"name": "inventario"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_mes",
+						"type": "DatasetReference"
+					},
+					"name": "dimMes"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_empresa",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpresa"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_producto_sedem",
+						"type": "DatasetReference"
+					},
+					"name": "dimProd"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_sedem_inventrio_mensual",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          inventario_id as integer,",
+				"          empresa_id as integer,",
+				"          producto_id as integer,",
+				"          nro_lote as string,",
+				"          cantidad_producida as decimal(12,3),",
+				"          cantidad_despachada as decimal(12,3),",
+				"          cantidad_disponible as decimal(12,3),",
+				"          estado as string,",
+				"          fecha_ultimo_movimiento as date,",
+				"          almacen as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> inventario",
+				"source(output(",
+				"          mes_key as integer,",
+				"          anio as integer,",
+				"          mes as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimMes",
+				"source(output(",
+				"          empresa_key as integer,",
+				"          empresa_id_origen as integer,",
+				"          sigla_empresa as string,",
+				"          nombre_empresa as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimEmpresa",
+				"source(output(",
+				"          producto_key as integer,",
+				"          producto_id_origen as integer,",
+				"          nombre_producto as string,",
+				"          categoria as string,",
+				"          presentacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimProd",
+				"inventario derive(mes_key_calc = toInteger(concat(toString(year(fecha_ultimo_movimiento)), iif(month(fecha_ultimo_movimiento)<10, concat('0',toString(month(fecha_ultimo_movimiento))), toString(month(fecha_ultimo_movimiento)))))) ~> derivedColumn1",
+				"derivedColumn1, dimMes join(mes_key_calc == mes_key,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, dimProd join(producto_id == producto_id_origen,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2, dimEmpresa join(empresa_id == empresa_id_origen,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3 select(mapColumn(",
+				"          nro_lote,",
+				"          cantidad_producida,",
+				"          cantidad_despachada,",
+				"          cantidad_disponible,",
+				"          estado = inventario@estado,",
+				"          fecha_ultimo_movimiento,",
+				"          almacen,",
+				"          mes_key,",
+				"          producto_key,",
+				"          empresa_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          inventario_mensual_key as integer,",
+				"          mes_key as integer,",
+				"          empresa_planta_key as integer,",
+				"          producto_key as integer,",
+				"          nro_lote as string,",
+				"          cantidad_producida as decimal(12,3),",
+				"          cantidad_despachada as decimal(12,3),",
+				"          cantidad_disponible as decimal(12,3),",
+				"          estado as string,",
+				"          almacen as string,",
+				"          fecha_ultimo_movimiento as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          mes_key,",
+				"          empresa_planta_key = empresa_key,",
+				"          producto_key,",
+				"          nro_lote,",
+				"          cantidad_producida,",
+				"          cantidad_despachada,",
+				"          cantidad_disponible,",
+				"          estado,",
+				"          almacen,",
+				"          fecha_ultimo_movimiento",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

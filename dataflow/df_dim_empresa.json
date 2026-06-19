@@ -1,0 +1,72 @@
+{
+	"name": "df_dim_empresa",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_empresas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_empresa",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          empresa_id_origen as integer,",
+				"          sigla_empresa as string,",
+				"          nombre_empresa as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\r\\n    e.empresa_id     AS empresa_id_origen,\\r\\n    e.sigla           AS sigla_empresa,\\r\\n    e.nombre          AS nombre_empresa,\\r\\n    e.municipio AS municipio,\\r\\n    e.departamento AS departamento,\\r\\n    e.estado AS estado\\r\\nFROM silver.sedem_empresas e',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empresa_key as integer,",
+				"          empresa_id_origen as integer,",
+				"          sigla_empresa as string,",
+				"          nombre_empresa as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          empresa_id_origen,",
+				"          sigla_empresa,",
+				"          nombre_empresa,",
+				"          municipio,",
+				"          departamento,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

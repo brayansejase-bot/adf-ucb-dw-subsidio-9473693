@@ -1,0 +1,180 @@
+{
+	"name": "df_hechos_sedem_produccion",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_sedem_produccion",
+						"type": "DatasetReference"
+					},
+					"name": "produccion"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_tiempo",
+						"type": "DatasetReference"
+					},
+					"name": "dimTiempo"
+				},
+				{
+					"dataset": {
+						"referenceName": "gol_empresa_planta",
+						"type": "DatasetReference"
+					},
+					"name": "dimEmpresa"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_producto_sedem",
+						"type": "DatasetReference"
+					},
+					"name": "dimProducto"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_sedem_produccion",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          produccion_id as integer,",
+				"          empresa_id as integer,",
+				"          planta_id as integer,",
+				"          producto_id as integer,",
+				"          nro_lote as string,",
+				"          fecha_produccion as date,",
+				"          cantidad as decimal(12,3),",
+				"          unidad as string,",
+				"          turno as string,",
+				"          responsable as string,",
+				"          costo_produccion as decimal(14,2),",
+				"          estado as string,",
+				"          fecha_vencimiento as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> produccion",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          mes as integer,",
+				"          anio as integer,",
+				"          trimestre as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimTiempo",
+				"source(output(",
+				"          empresa_planta_key as integer,",
+				"          empresa_id_origen as integer,",
+				"          sigla_empresa as string,",
+				"          nombre_empresa as string,",
+				"          planta_id_origen as integer,",
+				"          nombre_planta as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          tipo_planta as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimEmpresa",
+				"source(output(",
+				"          producto_key as integer,",
+				"          producto_id_origen as integer,",
+				"          nombre_producto as string,",
+				"          categoria as string,",
+				"          presentacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimProducto",
+				"produccion derive(fecha_key_calc = toInteger(concat(toString(year(toTimestamp(fecha_produccion))), iif(month(toTimestamp(fecha_produccion))<10, concat('0',toString(month(toTimestamp(fecha_produccion)))), toString(month(toTimestamp(fecha_produccion)))), iif(dayOfMonth(toTimestamp(fecha_produccion))<10, concat('0',toString(dayOfMonth(toTimestamp(fecha_produccion)))), toString(dayOfMonth(toTimestamp(fecha_produccion))))))) ~> derivedColumn1",
+				"derivedColumn1, dimTiempo join(fecha_key_calc == fecha_key,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, dimEmpresa join(planta_id == planta_id_origen,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2, dimProducto join(producto_id == producto_id_origen,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3 select(mapColumn(",
+				"          nro_lote,",
+				"          cantidad,",
+				"          unidad,",
+				"          turno,",
+				"          costo_produccion,",
+				"          estado = produccion@estado,",
+				"          fecha_vencimiento,",
+				"          fecha_key,",
+				"          empresa_planta_key,",
+				"          producto_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          produccion_key as integer,",
+				"          fecha_key as integer,",
+				"          empresa_planta_key as integer,",
+				"          producto_key as integer,",
+				"          nro_lote as string,",
+				"          cantidad as decimal(12,3),",
+				"          unidad as string,",
+				"          turno as string,",
+				"          costo_produccion as decimal(14,2),",
+				"          estado as string,",
+				"          fecha_vencimiento as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

@@ -1,0 +1,83 @@
+{
+	"name": "gold_hechos_sedem_calidad",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "calidad_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "empresa_planta_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "producto_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_control",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "parametro",
+				"type": "nvarchar"
+			},
+			{
+				"name": "valor_medido",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 4
+			},
+			{
+				"name": "unidad_medida",
+				"type": "nvarchar"
+			},
+			{
+				"name": "valor_minimo",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 4
+			},
+			{
+				"name": "valor_maximo",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 4
+			},
+			{
+				"name": "cumple",
+				"type": "bit"
+			},
+			{
+				"name": "inspector",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "hechos_sedem_calidad"
+		}
+	}
+}

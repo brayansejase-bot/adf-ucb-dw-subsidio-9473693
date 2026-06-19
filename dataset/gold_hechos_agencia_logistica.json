@@ -1,0 +1,81 @@
+{
+	"name": "gold_hechos_agencia_logistica",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "movimiento_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "almacen_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "transporte_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "tipo_movimiento",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_lote",
+				"type": "nvarchar"
+			},
+			{
+				"name": "recepcion_id_origen",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cantidad",
+				"type": "decimal",
+				"precision": 12,
+				"scale": 3
+			},
+			{
+				"name": "unidad",
+				"type": "nvarchar"
+			},
+			{
+				"name": "condicion_o_estado",
+				"type": "nvarchar"
+			},
+			{
+				"name": "centro_destino",
+				"type": "nvarchar"
+			},
+			{
+				"name": "temperatura_llegada",
+				"type": "decimal",
+				"precision": 5,
+				"scale": 2
+			},
+			{
+				"name": "nro_guia",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "hechos_agencia_logistica"
+		}
+	}
+}

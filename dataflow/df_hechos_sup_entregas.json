@@ -1,0 +1,230 @@
+{
+	"name": "df_hechos_sup_entregas",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_entregas_paquetes",
+						"type": "DatasetReference"
+					},
+					"name": "entregas"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_tiempo",
+						"type": "DatasetReference"
+					},
+					"name": "dimTiempo"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_persona",
+						"type": "DatasetReference"
+					},
+					"name": "dimPersona"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_sup_establecimientos_salud",
+						"type": "DatasetReference"
+					},
+					"name": "supEstab"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_establecimiento",
+						"type": "DatasetReference"
+					},
+					"name": "dimEstab"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_paquete",
+						"type": "DatasetReference"
+					},
+					"name": "dimPaq"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "join3"
+				},
+				{
+					"name": "join4"
+				},
+				{
+					"name": "join5"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_id as integer,",
+				"          boleta_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          paquete_id as integer,",
+				"          fecha_entrega as date,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as decimal(5,2),",
+				"          fecha_proxima_entrega as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> entregas",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          mes as integer,",
+				"          anio as integer,",
+				"          trimestre as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimTiempo",
+				"source(output(",
+				"          persona_key as integer,",
+				"          ci as string,",
+				"          nombre_completo as string,",
+				"          fecha_nac as date,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          municipio as string,",
+				"          edad_actual as integer,",
+				"          tiene_datos_segip as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimPersona",
+				"source(output(",
+				"          establecimiento_id as integer,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> supEstab",
+				"source(output(",
+				"          establecimiento_key as integer,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string,",
+				"          origen_dato as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimEstab",
+				"source(output(",
+				"          paquete_key as integer,",
+				"          paquete_id_origen as integer,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as decimal(5,2),",
+				"          costo_estimado_bs as decimal(10,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimPaq",
+				"entregas derive(fecha_key_calc = toInteger(concat(toString(year(toTimestamp(fecha_entrega))), iif(month(toTimestamp(fecha_entrega))<10, concat('0',toString(month(toTimestamp(fecha_entrega)))), toString(month(toTimestamp(fecha_entrega)))), iif(dayOfMonth(toTimestamp(fecha_entrega))<10, concat('0',toString(dayOfMonth(toTimestamp(fecha_entrega)))), toString(dayOfMonth(toTimestamp(fecha_entrega))))))) ~> derivedColumn1",
+				"derivedColumn1, dimTiempo join(fecha_key_calc == fecha_key,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, dimPersona join(ci_beneficiaria == ci,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2, supEstab join(entregas@establecimiento_id == supEstab@establecimiento_id,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join3",
+				"join3, dimEstab join(supEstab@codigo_snis == dimEstab@codigo_snis,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join4",
+				"join4, dimPaq join(paquete_id == paquete_id_origen,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join5",
+				"join5 select(mapColumn(",
+				"          lote_produccion,",
+				"          peso_paquete_kg,",
+				"          fecha_proxima_entrega,",
+				"          fecha_key,",
+				"          persona_key,",
+				"          establecimiento_key,",
+				"          paquete_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_key as integer,",
+				"          fecha_key as integer,",
+				"          persona_key as integer,",
+				"          establecimiento_key as integer,",
+				"          paquete_key as integer,",
+				"          peso_paquete_kg as decimal(5,2),",
+				"          lote_produccion as string,",
+				"          fecha_proxima_entrega as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

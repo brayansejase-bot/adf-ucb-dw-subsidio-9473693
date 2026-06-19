@@ -1,0 +1,50 @@
+{
+	"name": "gold_dim_empresa",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "empresa_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "empresa_id_origen",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "sigla_empresa",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nombre_empresa",
+				"type": "nvarchar"
+			},
+			{
+				"name": "municipio",
+				"type": "nvarchar"
+			},
+			{
+				"name": "departamento",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "dim_empresa"
+		}
+	}
+}

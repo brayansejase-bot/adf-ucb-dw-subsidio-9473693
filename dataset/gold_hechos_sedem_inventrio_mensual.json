@@ -1,0 +1,74 @@
+{
+	"name": "gold_hechos_sedem_inventrio_mensual",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "inventario_mensual_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "mes_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "empresa_planta_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "producto_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cantidad_producida",
+				"type": "decimal",
+				"precision": 12,
+				"scale": 3
+			},
+			{
+				"name": "cantidad_despachada",
+				"type": "decimal",
+				"precision": 12,
+				"scale": 3
+			},
+			{
+				"name": "cantidad_disponible",
+				"type": "decimal",
+				"precision": 12,
+				"scale": 3
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			},
+			{
+				"name": "almacen",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_ultimo_movimiento",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "hechos_sedem_inventario_mensual"
+		}
+	}
+}

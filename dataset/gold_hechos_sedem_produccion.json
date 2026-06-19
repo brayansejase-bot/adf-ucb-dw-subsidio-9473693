@@ -1,0 +1,72 @@
+{
+	"name": "gold_hechos_sedem_produccion",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "produccion_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "empresa_planta_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "producto_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_lote",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cantidad",
+				"type": "decimal",
+				"precision": 12,
+				"scale": 3
+			},
+			{
+				"name": "unidad",
+				"type": "nvarchar"
+			},
+			{
+				"name": "turno",
+				"type": "nvarchar"
+			},
+			{
+				"name": "costo_produccion",
+				"type": "decimal",
+				"precision": 14,
+				"scale": 2
+			},
+			{
+				"name": "estado",
+				"type": "nvarchar"
+			},
+			{
+				"name": "fecha_vencimiento",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "hechos_sedem_produccion"
+		}
+	}
+}

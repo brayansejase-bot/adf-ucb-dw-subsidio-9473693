@@ -8,14 +8,133 @@
 		"typeProperties": {
 			"sources": [
 				{
+					"dataset": {
+						"referenceName": "silver_bja_pagos",
+						"type": "DatasetReference"
+					},
 					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_tiempo",
+						"type": "DatasetReference"
+					},
+					"name": "dimtiempo"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_persona",
+						"type": "DatasetReference"
+					},
+					"name": "dimpersona"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "join2"
+				},
+				{
+					"name": "select1"
+				}
+			],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
-				"     validateSchema: false) ~> source1"
+				"source(output(",
+				"          pago_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as decimal(10,2),",
+				"          fecha_pago as date,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          mes as integer,",
+				"          anio as integer,",
+				"          trimestre as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimtiempo",
+				"source(output(",
+				"          persona_key as integer,",
+				"          ci as string,",
+				"          nombre_completo as string,",
+				"          fecha_nac as date,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          municipio as string,",
+				"          edad_actual as integer,",
+				"          tiene_datos_segip as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimpersona",
+				"source1 derive(fecha_key_calc = toInteger(concat(toString(year(toTimestamp(fecha_pago))), iif(month(toTimestamp(fecha_pago))<10, concat('0',toString(month(toTimestamp(fecha_pago)))), toString(month(toTimestamp(fecha_pago)))), iif(dayOfMonth(toTimestamp(fecha_pago))<10, concat('0',toString(dayOfMonth(toTimestamp(fecha_pago)))), toString(dayOfMonth(toTimestamp(fecha_pago))))))) ~> derivedColumn1",
+				"derivedColumn1, dimtiempo join(fecha_key_calc == fecha_key,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1, dimpersona join(ci_beneficiaria == ci,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join2",
+				"join2 select(mapColumn(",
+				"          concepto_pago,",
+				"          monto_bs,",
+				"          estado_pago,",
+				"          canal_pago,",
+				"          nro_comprobante,",
+				"          fecha_key,",
+				"          persona_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          pago_key as integer,",
+				"          fecha_key as integer,",
+				"          persona_key as integer,",
+				"          monto_bs as decimal(10,2),",
+				"          concepto_pago as string,",
+				"          canal_pago as string,",
+				"          estado_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}

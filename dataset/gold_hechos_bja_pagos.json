@@ -1,0 +1,57 @@
+{
+	"name": "gold_hechos_bja_pagos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "pago_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "persona_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "monto_bs",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "concepto_pago",
+				"type": "nvarchar"
+			},
+			{
+				"name": "canal_pago",
+				"type": "nvarchar"
+			},
+			{
+				"name": "estado_pago",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_comprobante",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "hechos_bja_pagos"
+		}
+	}
+}

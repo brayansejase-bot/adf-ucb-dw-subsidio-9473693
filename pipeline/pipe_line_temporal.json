@@ -5,7 +5,14 @@
 			{
 				"name": "Data flow1",
 				"type": "ExecuteDataFlow",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Data flow10",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -202,7 +209,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_dim_producto_sedem",
+						"referenceName": "df_dim_empresa",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -233,7 +240,312 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
+						"referenceName": "df_dim_producto_sedem",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Script1",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "dw_subsidio",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": "\r\nIF OBJECT_ID('gold.hechos_sedem_inventario_mensual', 'U') IS NOT NULL\r\n    DROP TABLE gold.hechos_sedem_inventario_mensual\r\n\r\nIF OBJECT_ID('gold.hechos_sedem_calidad', 'U') IS NOT NULL\r\n    DROP TABLE gold.hechos_sedem_calidad\r\n\r\nIF OBJECT_ID('gold.hechos_agencia_logistica', 'U') IS NOT NULL\r\n    DROP TABLE gold.hechos_agencia_logistica\r\n\r\nIF OBJECT_ID('gold.hechos_sedem_produccion', 'U') IS NOT NULL\r\n    DROP TABLE gold.hechos_sedem_produccion\r\n\r\nIF OBJECT_ID('gold.hechos_sup_entregas', 'U') IS NOT NULL\r\n    DROP TABLE gold.hechos_sup_entregas\r\n\r\nIF OBJECT_ID('gold.hechos_bja_controles', 'U') IS NOT NULL\r\n    DROP TABLE gold.hechos_bja_controles\r\n\r\nIF OBJECT_ID('gold.hechos_bja_pagos', 'U') IS NOT NULL\r\n    DROP TABLE gold.hechos_bja_pagos\r\n\r\n\r\nIF OBJECT_ID('gold.dim_mes', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_mes\r\n\r\nIF OBJECT_ID('gold.dim_paquete', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_paquete\r\n\r\nIF OBJECT_ID('gold.dim_producto_sedem', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_producto_sedem\r\n\r\nIF OBJECT_ID('gold.dim_empresa_planta', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_empresa_planta\r\n\r\nIF OBJECT_ID('gold.dim_empresa', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_empresa\r\n\r\nIF OBJECT_ID('gold.dim_transporte_vehiculo', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_transporte_vehiculo\r\n\r\nIF OBJECT_ID('gold.dim_almacen', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_almacen\r\n\r\nIF OBJECT_ID('gold.dim_establecimiento', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_establecimiento\r\n\r\nIF OBJECT_ID('gold.dim_persona', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_persona\r\n\r\nIF OBJECT_ID('gold.dim_tiempo', 'U') IS NOT NULL\r\n    DROP TABLE gold.dim_tiempo\r\n\r\n\r\n\r\nCREATE TABLE gold.dim_tiempo (\r\n    fecha_key   INT     NOT NULL,\r\n    fecha       DATE    NOT NULL,\r\n    mes         TINYINT NOT NULL,\r\n    anio        SMALLINT NOT NULL,\r\n    trimestre   TINYINT NOT NULL,\r\n    CONSTRAINT pk_gold_dim_tiempo PRIMARY KEY (fecha_key)\r\n)\r\n \r\nCREATE TABLE gold.dim_mes (\r\n    mes_key     INT     NOT NULL,\r\n    anio        SMALLINT NOT NULL,\r\n    mes         TINYINT NOT NULL,\r\n    CONSTRAINT pk_gold_dim_mes PRIMARY KEY (mes_key)\r\n)\r\n \r\nCREATE TABLE gold.dim_persona (\r\n    persona_key         INT IDENTITY(1,1) NOT NULL,\r\n    ci                   NVARCHAR(20)    NOT NULL,\r\n    nombre_completo       NVARCHAR(400)   NULL,\r\n    fecha_nac              DATE            NULL,\r\n    genero                  NCHAR(1)        NULL,\r\n    estado_civil             NVARCHAR(50)    NULL,\r\n    municipio                 NVARCHAR(100)   NULL,\r\n    edad_actual                INT             NULL,\r\n    tiene_datos_segip            BIT             NOT NULL DEFAULT 0,\r\n    CONSTRAINT pk_gold_dim_persona PRIMARY KEY (persona_key),\r\n    CONSTRAINT uq_gold_dim_persona_ci UNIQUE (ci)\r\n)\r\n \r\nCREATE TABLE gold.dim_establecimiento (\r\n    establecimiento_key   INT IDENTITY(1,1) NOT NULL,\r\n    codigo_snis             NVARCHAR(50)    NOT NULL,\r\n    nombre                    NVARCHAR(255)   NOT NULL,\r\n    tipo                       NVARCHAR(100)   NOT NULL,\r\n    nivel_atencion                NVARCHAR(100)   NOT NULL,\r\n    municipio                       NVARCHAR(100)   NOT NULL,\r\n    departamento                      NVARCHAR(100)   NOT NULL,\r\n    red_salud                           NVARCHAR(100)   NULL,\r\n    estado                                NVARCHAR(50)    NOT NULL,\r\n    origen_dato                            NVARCHAR(20)    NOT NULL, -- 'BJA','SUP','AMBOS'\r\n    CONSTRAINT pk_gold_dim_establecimiento PRIMARY KEY (establecimiento_key),\r\n    CONSTRAINT uq_gold_dim_estab_codigo_snis UNIQUE (codigo_snis)\r\n)\r\n \r\nCREATE TABLE gold.dim_almacen (\r\n    almacen_key       INT IDENTITY(1,1) NOT NULL,\r\n    almacen_id_origen   INT             NOT NULL,\r\n    nombre                NVARCHAR(200)   NOT NULL,\r\n    municipio               NVARCHAR(100)   NOT NULL,\r\n    departamento              NVARCHAR(100)   NOT NULL,\r\n    capacidad_m3                DECIMAL(10,2)   NULL,\r\n    estado                        NVARCHAR(50)    NOT NULL,\r\n    CONSTRAINT pk_gold_dim_almacen PRIMARY KEY (almacen_key)\r\n)\r\n \r\nCREATE TABLE gold.dim_transporte_vehiculo (\r\n    transporte_key            INT IDENTITY(1,1) NOT NULL,\r\n    transportista_id_origen     INT             NOT NULL,\r\n    razon_social                   NVARCHAR(255)   NOT NULL,\r\n    nit                               NVARCHAR(20)    NULL,\r\n    transportista_estado                NVARCHAR(50)    NOT NULL,\r\n    vehiculo_id_origen                     INT             NOT NULL,\r\n    placa                                     NVARCHAR(20)    NOT NULL,\r\n    tipo_vehiculo                                NVARCHAR(100)   NULL,\r\n    capacidad_kg                                    DECIMAL(10,2)   NULL,\r\n    vehiculo_estado                                    NVARCHAR(50)    NOT NULL,\r\n    CONSTRAINT pk_gold_dim_transporte_vehiculo PRIMARY KEY (transporte_key)\r\n)\r\n \r\nCREATE TABLE gold.dim_empresa_planta (\r\n    empresa_planta_key     INT IDENTITY(1,1) NOT NULL,\r\n    empresa_id_origen        INT             NOT NULL,\r\n    sigla_empresa               NVARCHAR(20)    NULL,\r\n    nombre_empresa                 NVARCHAR(255)   NOT NULL,\r\n    planta_id_origen                  INT             NOT NULL,\r\n    nombre_planta                        NVARCHAR(255)   NOT NULL,\r\n    municipio                               NVARCHAR(100)   NOT NULL,\r\n    departamento                               NVARCHAR(100)   NOT NULL,\r\n    tipo_planta                                   NVARCHAR(100)   NULL,\r\n    estado                                           NVARCHAR(50)    NOT NULL,\r\n    CONSTRAINT pk_gold_dim_empresa_planta PRIMARY KEY (empresa_planta_key)\r\n)\r\n\r\nCREATE TABLE gold.dim_empresa (\r\n    empresa_key     INT IDENTITY(1,1) NOT NULL,\r\n    empresa_id_origen        INT             NOT NULL,\r\n    sigla_empresa               NVARCHAR(20)    NULL,\r\n    nombre_empresa                 NVARCHAR(255)   NOT NULL,\r\n    municipio                               NVARCHAR(100)   NOT NULL,\r\n    departamento                               NVARCHAR(100)   NOT NULL,\r\n    estado                                           NVARCHAR(50)    NOT NULL,\r\n    CONSTRAINT pk_gold_dim_empresa PRIMARY KEY (empresa_key)\r\n)\r\nCREATE TABLE gold.dim_producto_sedem (\r\n    producto_key         INT IDENTITY(1,1) NOT NULL,\r\n    producto_id_origen     INT             NOT NULL,\r\n    nombre_producto           NVARCHAR(255)   NOT NULL,\r\n    categoria                   NVARCHAR(100)   NULL,\r\n    presentacion                   NVARCHAR(100)   NULL,\r\n    estado                            NVARCHAR(50)    NOT NULL,\r\n    CONSTRAINT pk_gold_dim_producto_sedem PRIMARY KEY (producto_key)\r\n)\r\nCREATE TABLE gold.dim_paquete (\r\n    paquete_key         INT IDENTITY(1,1) NOT NULL,\r\n    paquete_id_origen     INT             NOT NULL,\r\n    nombre                  NVARCHAR(255)   NOT NULL,\r\n    contenido                 NVARCHAR(MAX)   NOT NULL,\r\n    peso_estandar_kg            DECIMAL(5,2)    NULL,\r\n    costo_estimado_bs              DECIMAL(10,2)   NULL,\r\n    CONSTRAINT pk_gold_dim_paquete PRIMARY KEY (paquete_key)\r\n)\r\n\r\n \r\nCREATE TABLE gold.hechos_bja_pagos (\r\n    pago_key            INT IDENTITY(1,1) NOT NULL,\r\n    fecha_key              INT             NOT NULL,\r\n    persona_key               INT             NOT NULL,\r\n    monto_bs                    DECIMAL(10,2)   NOT NULL,\r\n    concepto_pago                  NVARCHAR(200)   NOT NULL,\r\n    canal_pago                        NVARCHAR(100)   NULL,\r\n    estado_pago                          NVARCHAR(50)    NOT NULL,\r\n    nro_comprobante                         NVARCHAR(100)   NULL,\r\n    CONSTRAINT pk_gold_hechos_bja_pagos PRIMARY KEY (pago_key),\r\n    CONSTRAINT fk_pagos_fecha FOREIGN KEY (fecha_key)\r\n        REFERENCES gold.dim_tiempo(fecha_key),\r\n    CONSTRAINT fk_pagos_persona FOREIGN KEY (persona_key)\r\n        REFERENCES gold.dim_persona(persona_key)\r\n)\r\n \r\nCREATE TABLE gold.hechos_bja_controles (\r\n    control_key            INT IDENTITY(1,1) NOT NULL,\r\n    fecha_key                  INT             NOT NULL,\r\n    persona_key                   INT             NOT NULL,\r\n    establecimiento_key              INT             NOT NULL,\r\n    tipo_control                        NVARCHAR(20)    NOT NULL, \r\n    nro_control                            INT             NULL,\r\n    semana_gestacion                          INT             NULL,\r\n    peso_kg                                      DECIMAL(5,2)    NULL,\r\n    talla_cm                                        DECIMAL(5,1)    NULL,\r\n    presion_arterial                                   NVARCHAR(20)    NULL,\r\n    tipo_parto                                            NVARCHAR(50)    NULL,\r\n    vacuna_aplicada                                          NVARCHAR(100)   NULL,\r\n    resultado                                                   NVARCHAR(100)   NULL,\r\n    CONSTRAINT pk_gold_hechos_bja_controles PRIMARY KEY (control_key),\r\n    CONSTRAINT fk_controles_fecha FOREIGN KEY (fecha_key)\r\n        REFERENCES gold.dim_tiempo(fecha_key),\r\n    CONSTRAINT fk_controles_persona FOREIGN KEY (persona_key)\r\n        REFERENCES gold.dim_persona(persona_key),\r\n    CONSTRAINT fk_controles_establecimiento FOREIGN KEY (establecimiento_key)\r\n        REFERENCES gold.dim_establecimiento(establecimiento_key)\r\n)\r\n \r\nCREATE TABLE gold.hechos_sup_entregas (\r\n    entrega_key            INT IDENTITY(1,1) NOT NULL,\r\n    fecha_key                  INT             NOT NULL,\r\n    persona_key                   INT             NOT NULL,\r\n    establecimiento_key              INT             NOT NULL,\r\n    paquete_key                         INT             NOT NULL,\r\n    peso_paquete_kg                        DECIMAL(5,2)    NULL,\r\n    lote_produccion                           NVARCHAR(100)   NULL,\r\n    fecha_proxima_entrega                        DATE            NULL,\r\n    CONSTRAINT pk_gold_hechos_sup_entregas PRIMARY KEY (entrega_key),\r\n    CONSTRAINT fk_entregas_fecha FOREIGN KEY (fecha_key)\r\n        REFERENCES gold.dim_tiempo(fecha_key),\r\n    CONSTRAINT fk_entregas_persona FOREIGN KEY (persona_key)\r\n        REFERENCES gold.dim_persona(persona_key),\r\n    CONSTRAINT fk_entregas_establecimiento FOREIGN KEY (establecimiento_key)\r\n        REFERENCES gold.dim_establecimiento(establecimiento_key),\r\n    CONSTRAINT fk_entregas_paquete FOREIGN KEY (paquete_key)\r\n        REFERENCES gold.dim_paquete(paquete_key)\r\n)\r\n \r\nCREATE TABLE gold.hechos_sedem_produccion (\r\n    produccion_key           INT IDENTITY(1,1) NOT NULL,\r\n    fecha_key                    INT             NOT NULL,\r\n    empresa_planta_key              INT             NOT NULL,\r\n    producto_key                       INT             NOT NULL,\r\n    nro_lote                              NVARCHAR(100)   NOT NULL,\r\n    cantidad                                 DECIMAL(12,3)   NOT NULL,\r\n    unidad                                      NVARCHAR(50)    NOT NULL,\r\n    turno                                          NVARCHAR(50)    NULL,\r\n    costo_produccion                                  DECIMAL(14,2)   NULL,\r\n    estado                                               NVARCHAR(50)    NOT NULL,\r\n    fecha_vencimiento                                       DATE            NULL,\r\n    CONSTRAINT pk_gold_hechos_sedem_produccion PRIMARY KEY (produccion_key),\r\n    CONSTRAINT fk_produccion_fecha FOREIGN KEY (fecha_key)\r\n        REFERENCES gold.dim_tiempo(fecha_key),\r\n    CONSTRAINT fk_produccion_empresa_planta FOREIGN KEY (empresa_planta_key)\r\n        REFERENCES gold.dim_empresa_planta(empresa_planta_key),\r\n    CONSTRAINT fk_produccion_producto FOREIGN KEY (producto_key)\r\n        REFERENCES gold.dim_producto_sedem(producto_key)\r\n)\r\n\r\n \r\nCREATE TABLE gold.hechos_agencia_logistica (\r\n    movimiento_key           INT IDENTITY(1,1) NOT NULL,\r\n    fecha_key                    INT             NOT NULL,\r\n    almacen_key                     INT             NOT NULL,\r\n    transporte_key                     INT             NOT NULL,\r\n    tipo_movimiento                       NVARCHAR(20)    NOT NULL, \r\n    nro_lote                                 NVARCHAR(100)   NOT NULL,\r\n    recepcion_id_origen                         INT             NOT NULL, \r\n    cantidad                                       DECIMAL(12,3)   NOT NULL,\r\n    unidad                                            NVARCHAR(50)    NOT NULL,\r\n    condicion_o_estado                                   NVARCHAR(50)    NOT NULL,\r\n    centro_destino                                          NVARCHAR(255)   NULL,  \r\n    temperatura_llegada                                        DECIMAL(5,2)    NULL,  \r\n    nro_guia                                                      NVARCHAR(100)   NULL,\r\n    CONSTRAINT pk_gold_hechos_agencia_logistica PRIMARY KEY (movimiento_key),\r\n    CONSTRAINT fk_logistica_fecha FOREIGN KEY (fecha_key)\r\n        REFERENCES gold.dim_tiempo(fecha_key),\r\n    CONSTRAINT fk_logistica_almacen FOREIGN KEY (almacen_key)\r\n        REFERENCES gold.dim_almacen(almacen_key),\r\n    CONSTRAINT fk_logistica_transporte FOREIGN KEY (transporte_key)\r\n        REFERENCES gold.dim_transporte_vehiculo(transporte_key)\r\n)\r\n\r\n \r\nCREATE TABLE gold.hechos_sedem_calidad (\r\n    calidad_key             INT IDENTITY(1,1) NOT NULL,\r\n    fecha_key                   INT             NOT NULL,\r\n    empresa_planta_key             INT             NOT NULL,\r\n    producto_key                      INT             NOT NULL,\r\n    nro_lote                            NVARCHAR(100)   NOT NULL,  \r\n    nro_control                            INT             NOT NULL,\r\n    parametro                                 NVARCHAR(100)   NOT NULL, \r\n    valor_medido                                 DECIMAL(10,4)   NULL,\r\n    unidad_medida                                   NVARCHAR(50)    NULL,\r\n    valor_minimo                                       DECIMAL(10,4)   NULL,\r\n    valor_maximo                                           DECIMAL(10,4)   NULL,\r\n    cumple                                                    BIT             NOT NULL,\r\n    inspector                                                    NVARCHAR(200)   NULL,\r\n    CONSTRAINT pk_gold_hechos_sedem_calidad PRIMARY KEY (calidad_key),\r\n    CONSTRAINT fk_calidad_fecha FOREIGN KEY (fecha_key)\r\n        REFERENCES gold.dim_tiempo(fecha_key),\r\n    CONSTRAINT fk_calidad_empresa_planta FOREIGN KEY (empresa_planta_key)\r\n        REFERENCES gold.dim_empresa_planta(empresa_planta_key),\r\n    CONSTRAINT fk_calidad_producto FOREIGN KEY (producto_key)\r\n        REFERENCES gold.dim_producto_sedem(producto_key)\r\n)\r\n\r\n \r\n \r\nCREATE TABLE gold.hechos_sedem_inventario_mensual (\r\n    inventario_mensual_key   INT IDENTITY(1,1) NOT NULL,\r\n    mes_key                      INT             NOT NULL,\r\n    empresa_planta_key              INT             NOT NULL,\r\n    producto_key                       INT             NOT NULL,\r\n    nro_lote                              NVARCHAR(100)   NOT NULL,  \r\n    cantidad_producida                       DECIMAL(12,3)   NOT NULL,\r\n    cantidad_despachada                         DECIMAL(12,3)   NOT NULL DEFAULT 0,\r\n    cantidad_disponible                            DECIMAL(12,3)   NOT NULL,  \r\n    estado                                            NVARCHAR(50)    NOT NULL,\r\n    almacen                                              NVARCHAR(200)   NULL,\r\n    fecha_ultimo_movimiento                                 DATE            NULL,\r\n    CONSTRAINT pk_gold_inventario_mensual PRIMARY KEY (inventario_mensual_key),\r\n    CONSTRAINT fk_invmensual_mes FOREIGN KEY (mes_key)\r\n        REFERENCES gold.dim_mes(mes_key),\r\n    CONSTRAINT fk_invmensual_empresa_planta FOREIGN KEY (empresa_planta_key)\r\n        REFERENCES gold.dim_empresa_planta(empresa_planta_key),\r\n    CONSTRAINT fk_invmensual_producto FOREIGN KEY (producto_key)\r\n        REFERENCES gold.dim_producto_sedem(producto_key)\r\n)\r\n\r\n"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			},
+			{
+				"name": "Data flow10",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Script1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_dim_tiempo",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow11",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Data flow8",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
 						"referenceName": "df_dim_paquete",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow12",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Data flow11",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_hechos_pagos",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow13",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Data flow12",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_hechos_bja_controles",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow14",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Data flow13",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_hechos_sup_entregas",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow15",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Data flow14",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_hechos_sedem_produccion",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow16",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Data flow15",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_hechos_logistica",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow17",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Data flow16",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_hechos_sedem_calidad",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow18",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Data flow17",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_hechos_sedem_inventario_mensual",
 						"type": "DataFlowReference"
 					},
 					"compute": {

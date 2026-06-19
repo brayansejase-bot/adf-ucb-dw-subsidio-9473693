@@ -1,0 +1,82 @@
+{
+	"name": "gold_hechos_bja_controles",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "control_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "persona_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "establecimiento_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "tipo_control",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nro_control",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "semana_gestacion",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "peso_kg",
+				"type": "decimal",
+				"precision": 5,
+				"scale": 2
+			},
+			{
+				"name": "talla_cm",
+				"type": "decimal",
+				"precision": 5,
+				"scale": 1
+			},
+			{
+				"name": "presion_arterial",
+				"type": "nvarchar"
+			},
+			{
+				"name": "tipo_parto",
+				"type": "nvarchar"
+			},
+			{
+				"name": "vacuna_aplicada",
+				"type": "nvarchar"
+			},
+			{
+				"name": "resultado",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "hechos_bja_controles"
+		}
+	}
+}
